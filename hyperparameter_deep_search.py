@@ -1,21 +1,16 @@
 from sklearn.model_selection import GridSearchCV
-from keras.models import Sequential
-from keras.layers import Dense, Flatten
-from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasRegressor
 from keras.constraints import maxnorm
 
 import numpy as np
 from parse_data import PData
-# from myAcc import accur
 from useful_functions import unison_shuffled_copies
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout
-import random
-import os
 import itertools
 import time
 import CVProgressBar
+
 
 # Function to create model, required for KerasClassifier
 def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values):
@@ -50,9 +45,9 @@ if __name__ == '__main__':
     X = np.array_split(X, [TrainSize], axis=0)
     Y = np.array_split(Y, [TrainSize], axis=0)
 
-    x_train =X[0]
+    x_train = X[0]
+    y_train = Y[0]
     x_test = X[1]
-    y_train =Y[0]
     y_test = Y[1]
 
     # create model
@@ -142,7 +137,6 @@ if __name__ == '__main__':
                 results_file.write("mean: {0}, std:{1} with: {2}\n".format(mean, stdev, param))
             print("Results for {0} layers are written to the file {1}"
                   .format(dense_hidden_layers_amount, results_hyperparameters_file_name))
-
 
         results_file.write(
             "-------------------------------------------------------------------------------------------------------\n")
