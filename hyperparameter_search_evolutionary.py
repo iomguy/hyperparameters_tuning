@@ -6,8 +6,7 @@ from parse_data import PData
 from useful_functions import unison_shuffled_copies
 #from keras.models import Sequential
 #from keras.layers.core import Dense, Dropout
-import itertools
-import time
+import itertoolsimport time
 import CVProgressBar
 import warnings
 warnings.filterwarnings('ignore')

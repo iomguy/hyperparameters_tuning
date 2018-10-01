@@ -5,22 +5,25 @@ import time
 import warnings
 import logging
 from neuro_evolution import evolution
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout
 warnings.filterwarnings('ignore')
 
 
 # Function to create model, required for KerasClassifier
-def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values):
+def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values,
+                 metrics, loss, optimizer):
     # create model
     model = Sequential()
-    model.add(Dense(dense_neurons_on_layer_amounts[0], activation=dense_activation_types[0], input_shape=input_shape_X))
+    model.add(Dense(dense_neurons_on_layer_amounts, activation=dense_activation_types, input_shape=input_shape_X))
     # TODO: проверь, так ли ставятся дропауты
     for i in range(0, dense_hidden_layers_amount):
         model.add(
-            Dense(dense_neurons_on_layer_amounts[i+1], activation=dense_activation_types[i+1], input_shape=input_shape_X))
-        model.add(Dropout(dropout_values[i]))
+            Dense(dense_neurons_on_layer_amounts, activation=dense_activation_types))
+        model.add(Dropout(dropout_values))
 
     model.add(Dense(1))  # обычный линейный нейрон
-    model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     return model
 
 
@@ -82,10 +85,12 @@ if __name__ == '__main__':
             "activations": ["relu", "tanh", "linear", "sigmoid"],
             "last_layer_activations": ["sigmoid"],
             "losses": ["mse"],
-            "metrics": ["mae"]
+            "metrics": ["mae"],
+            "estimator": [create_model]
         }
 
         search = evolution.NeuroEvolution(generations=10, population=10, params=params)
+        # наилучшая сеть ищется с точки зрения metrics
         search.evolve(x_train, y_train, x_test, y_test)
 
         logging.info("Best metrics: {}, Best params: {}".
