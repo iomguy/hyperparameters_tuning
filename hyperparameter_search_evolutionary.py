@@ -1,31 +1,31 @@
-from sklearn.model_selection import GridSearchCV
-from keras.wrappers.scikit_learn import KerasRegressor
-from keras.constraints import maxnorm
-
+#from sklearn.model_selection import GridSearchCV
+#from keras.wrappers.scikit_learn import KerasRegressor
+#from keras.constraints import maxnorm
 import numpy as np
 from parse_data import PData
 from useful_functions import unison_shuffled_copies
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout
+#from keras.models import Sequential
+#from keras.layers.core import Dense, Dropout
 import itertools
 import time
 import CVProgressBar
-
+import warnings
+warnings.filterwarnings('ignore')
 
 # Function to create model, required for KerasClassifier
-def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values):
+#def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values):
     # create model
-    model = Sequential()
-    model.add(Dense(dense_neurons_on_layer_amounts[0], activation=dense_activation_types[0], input_shape=input_shape_X))
-    # TODO: проверь, так ли ставятся дропауты
-    for i in range(0, dense_hidden_layers_amount):
-        model.add(
-            Dense(dense_neurons_on_layer_amounts[i+1], activation=dense_activation_types[i+1], input_shape=input_shape_X))
-        model.add(Dropout(dropout_values[i]))
+ #   model = Sequential()
+  #  model.add(Dense(dense_neurons_on_layer_amounts[0], activation=dense_activation_types[0], input_shape=input_shape_X))
+   # # TODO: проверь, так ли ставятся дропауты
+    #for i in range(0, dense_hidden_layers_amount):
+     #   model.add(
+     #       Dense(dense_neurons_on_layer_amounts[i+1], activation=dense_activation_types[i+1], input_shape=input_shape_X))
+     #   model.add(Dropout(dropout_values[i]))
 
-    model.add(Dense(1))  # обычный линейный нейрон
-    model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-    return model
+    #model.add(Dense(1))  # обычный линейный нейрон
+    #model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+    #return model
 
 
 if __name__ == '__main__':
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     # create model
     # non-zero verbose parameter shows the progress for each net epoch
-    model = KerasRegressor(build_fn=create_model, epochs=50, verbose=0)
+    #model = KerasRegressor(build_fn=create_model, epochs=50, verbose=0)
 
 
     # Задаём варьируемые гиперпараметры системы
@@ -110,35 +110,20 @@ if __name__ == '__main__':
             cv = 5
             # стырил обёртку, добавляющую прогрессбар для GridSearchCV на каждом слое
             # непонятно, какое число потоков n_jobs следует ставить. Значение -1 позволяет выбирать его автоматически
-            grid = CVProgressBar.GridSearchCVProgressBar(estimator=model,
-                                                         param_grid=param_grid,
-                                                         n_jobs=-1,
-                                                         cv=cv)
+            #grid = CVProgressBar.GridSearchCVProgressBar(estimator=model,
+            #                                             param_grid=param_grid,
+            #                                             n_jobs=-1,
+            #                                             cv=cv)
 
-            # запускаем варьирование параметров для заданного числа слоёв, загоняем результаты в объекте
-            grid_result = grid.fit(x_train, y_train)
 
-            # summarize results
-            print("------------------------------------------------------------------------------------")
-            print("For {} layers".format(dense_hidden_layers_amount))
-            print("Best: {0} using {1}".format(grid_result.best_score_, grid_result.best_params_))
 
-            curr_time = time.time()
-            results_file.write("------------------------------------------------------------------------------------\n")
-            results_file.write("For {} layers\n".format(dense_hidden_layers_amount))
-            results_file.write("Best: {0} using {1}\n".format(grid_result.best_score_, grid_result.best_params_))
-            results_file.write("in {0} seconds\n".format(curr_time - prev_time))
-            prev_time = curr_time
+#### Пытался разобраться в либе DEAP (где реализованы разные алгоритмы подбора гиперпараметров) но все тщетно. TPOT тоже реализует генетический поиск но не по заданным параметрам
+#### а по всем возможным параметрам для всех алгоритмов машинного обучения. Но он сильно примитивен. В идеале бы разобраться с синтаксисом DEAP
+#### и работать с keras'ом. Потому что TPOT использует sklearn'овские алгоритмы машинного обучения (от линеной регрессии до нейронок),
+#### а последние в нем слабо реализованы (keras'овские нейронки мощнее)
 
-            means = grid_result.cv_results_['mean_test_score']
-            stds = grid_result.cv_results_['std_test_score']
-            params = grid_result.cv_results_['params']
+            from tpot import TPOTRegressor
+            tpot = TPOTRegressor(generations=500,population_size=500,offspring_size=10, crossover_rate=0.1,
+            verbosity=2,n_jobs=-1).fit(x_train,y_train)
+            print(tpot.score(x_test, y_test))
 
-            for mean, stdev, param in zip(means, stds, params):
-                results_file.write("mean: {0}, std:{1} with: {2}\n".format(mean, stdev, param))
-            print("Results for {0} layers are written to the file {1}"
-                  .format(dense_hidden_layers_amount, results_hyperparameters_file_name))
-
-        results_file.write(
-            "-------------------------------------------------------------------------------------------------------\n")
-        results_file.write("Fin in {} seconds!\n".format(curr_time - start_time))
