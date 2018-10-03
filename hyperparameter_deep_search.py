@@ -1,4 +1,4 @@
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasRegressor
 from keras.constraints import maxnorm
 
@@ -110,13 +110,19 @@ if __name__ == '__main__':
             cv = 5
             # стырил обёртку, добавляющую прогрессбар для GridSearchCV на каждом слое
             # непонятно, какое число потоков n_jobs следует ставить. Значение -1 позволяет выбирать его автоматически
-            grid = CVProgressBar.GridSearchCVProgressBar(estimator=model,
-                                                         param_grid=param_grid,
-                                                         n_jobs=-1,
-                                                         cv=cv)
+            # grid = CVProgressBar.GridSearchCVProgressBar(estimator=model,
+            #                                              param_grid=param_grid,
+            #                                              n_jobs=-1,
+            #                                              cv=cv)
+
+            grid = CVProgressBar.RandomizedSearchCVProgressBar(estimator=model,
+                                                               param_distributions=param_grid,
+                                                               n_jobs=-1,
+                                                               cv=cv,
+                                                               n_iter=250)
 
             # запускаем варьирование параметров для заданного числа слоёв, загоняем результаты в объекте
-            grid_result = grid.fit(x_train, y_train)
+            grid_result = grid.fit(X, Y)
 
             # summarize results
             print("------------------------------------------------------------------------------------")
