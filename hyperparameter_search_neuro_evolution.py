@@ -2,6 +2,7 @@ import numpy as np
 from parse_data import PData
 from useful_functions import unison_shuffled_copies
 import time
+import os
 import warnings
 import logging
 from neuro_evolution import evolution
@@ -29,7 +30,7 @@ def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_lay
 
 if __name__ == '__main__':
     # disables tensorflow debug info
-    # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
     start_time = time.time()
     prev_time = start_time
@@ -37,12 +38,12 @@ if __name__ == '__main__':
 
     # prepare data
     X, Y = PData("AllData.txt")
-    X, Y = unison_shuffled_copies(X, Y)
+    # X, Y = unison_shuffled_copies(X, Y)
 
-    TrainSize = np.ceil(len(X) * 0.8).astype(int)
-
-    X = np.array_split(X, [TrainSize], axis=0)
-    Y = np.array_split(Y, [TrainSize], axis=0)
+    # TrainSize = np.ceil(len(X) * 0.8).astype(int)
+    #
+    # X = np.array_split(X, [TrainSize], axis=0)
+    # Y = np.array_split(Y, [TrainSize], axis=0)
 
     x_train = X[0]
     y_train = Y[0]
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 
     # input_shape для полносвязного слоя зависит от формы x_train, поэтмоу он тоже подаётся как вариант
     # параметра системы, просто один вариант
-    input_shape_X_list = (x_train.shape[1],)
+    input_shape_X_list = X.shape
     # варианты числа скрытых слоёв
     dense_hidden_layers_amount_list = [2, 3]
     # варианты числа нейронов для любого слоя (первого или скрытого)
@@ -91,7 +92,7 @@ if __name__ == '__main__':
 
         search = evolution.NeuroEvolution(generations=10, population=10, params=params)
         # наилучшая сеть ищется с точки зрения metrics
-        search.evolve(x_train, y_train, x_test, y_test)
+        search.evolve(X, Y)
 
         logging.info("Best metrics: {}, Best params: {}".
                      format(search.best_params.accuracy, search.best_params.network))

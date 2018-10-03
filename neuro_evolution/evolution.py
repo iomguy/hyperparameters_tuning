@@ -21,7 +21,7 @@ class NeuroEvolution:
         self.networks = None
         self.best_params = None
 
-    def evolve(self, x_train, y_train, x_test, y_test):
+    def evolve(self, X, Y):
         """
         Takes data for traning and data for test and iterate thought generations to find parameters with lowest error
         :param x_train array: array with features for traning
@@ -34,14 +34,14 @@ class NeuroEvolution:
         optimizer = Optimizer(self._params)
         self._networks = list(optimizer.create_population(self._population))
 
-        for i in range(self._generations - 1):
-            self._train_networks(x_train, y_train, x_test, y_test)
+        for generation in range(self._generations - 1):
+            self._train_networks(X, Y, generation)
             self._networks = optimizer.evolve(self._networks)
 
         self._networks = sorted(self._networks, key=lambda x: x.accuracy, reverse=True)
         self.best_params = self._networks[0]
 
-    def _train_networks(self, x_train, y_train, x_test, y_test):
+    def _train_networks(self, X, Y, generation):
         """
         Method for networks training
         :param x_train array: array with features for traning
@@ -51,8 +51,9 @@ class NeuroEvolution:
         :return: None
         """
         pbar = tqdm(total=len(self._networks))
+        pbar.set_description("Generation: {}".format(generation))
         for network in self._networks:
-            network.train(x_train, y_train, x_test, y_test)
+            network.train(X, Y)
             pbar.update(1)
         pbar.close()
 
