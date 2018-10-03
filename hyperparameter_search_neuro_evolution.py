@@ -96,3 +96,4 @@ if __name__ == '__main__':
 
         logging.info("Best metrics: {}, Best params: {}".
                      format(search.best_params.accuracy, search.best_params.network))
+        logging.info("in {0} seconds".format(time.time()-start_time))
