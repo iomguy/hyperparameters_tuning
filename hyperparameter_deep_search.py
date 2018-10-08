@@ -88,6 +88,16 @@ if __name__ == '__main__':
     batch_size_list = [8, 16, 32]
     results_hyperparameters_file_name = "results_hyperparameters.txt"
 
+    # Задаём параметры для GridSearch или RandomizedSearch
+
+    # критерий, который мы вычисляем на каждой кросс-валидации
+    # и по которому затем сравниваем архитектуры с разными гиперпараметрами
+    cv_scoring = "neg_mean_absolute_error"
+    # число итераций для RandomizedSearch
+    cv_n_rand_iter = 250
+    # параметр многопоточности, -1 значит, что будут использоваться все логические ядра
+    cv_n_jobs = -1
+
     # TODO: переведи результаты в Pandas, сохраняй в .csv
     with open(results_hyperparameters_file_name, "w") as results_file:
         # тут вручную параметры перебираются для каждого числа слоёв
