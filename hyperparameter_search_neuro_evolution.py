@@ -11,20 +11,37 @@ from keras.layers.core import Dense, Dropout
 warnings.filterwarnings('ignore')
 
 
-# Function to create model, required for KerasClassifier
-def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values,
-                 metrics, loss, optimizer):
+def create_model(input_shape_X,
+                 dense_hidden_layers_amount,
+                 dense_neurons_on_layer_amounts,
+                 dense_activation_types,
+                 dropout_values,
+                 metrics,
+                 loss,
+                 optimizer):
+    """Function to construct a model, required for KerasClassifier"""
+
     # create model
     model = Sequential()
-    model.add(Dense(dense_neurons_on_layer_amounts, activation=dense_activation_types, input_shape=input_shape_X))
-    # TODO: проверь, так ли ставятся дропауты
+
+    # первый полносвязный слой
+    model.add(Dense(dense_neurons_on_layer_amounts,
+                    activation=dense_activation_types,
+                    input_shape=input_shape_X))
+
+    # скрытые слои
     for i in range(0, dense_hidden_layers_amount):
         model.add(
-            Dense(dense_neurons_on_layer_amounts, activation=dense_activation_types))
+            Dense(dense_neurons_on_layer_amounts,
+                  activation=dense_activation_types))
         model.add(Dropout(dropout_values))
 
-    model.add(Dense(1))  # обычный линейный нейрон
-    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    # обычный линейный нейрон в конце
+    model.add(Dense(1))
+    model.compile(optimizer=optimizer,
+                  loss=loss,
+                  metrics=metrics)
+
     return model
 
 

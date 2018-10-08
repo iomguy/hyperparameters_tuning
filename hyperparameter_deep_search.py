@@ -12,19 +12,35 @@ import time
 import CVProgressBar
 
 
-# Function to create model, required for KerasClassifier
-def create_model(input_shape_X, dense_hidden_layers_amount, dense_neurons_on_layer_amounts, dense_activation_types, dropout_values):
+def create_model(input_shape_X,
+                 dense_hidden_layers_amount,
+                 dense_neurons_on_layer_amounts,
+                 dense_activation_types,
+                 dropout_values):
+    """Function to construct a model, required for KerasClassifier"""
+
     # create model
     model = Sequential()
-    model.add(Dense(dense_neurons_on_layer_amounts[0], activation=dense_activation_types[0], input_shape=input_shape_X))
-    # TODO: проверь, так ли ставятся дропауты
+
+    # первый полносвязный слой
+    model.add(Dense(dense_neurons_on_layer_amounts[0],
+                    activation=dense_activation_types[0],
+                    input_shape=input_shape_X))
+
+    # скрытые слои
     for i in range(0, dense_hidden_layers_amount):
         model.add(
-            Dense(dense_neurons_on_layer_amounts[i+1], activation=dense_activation_types[i+1], input_shape=input_shape_X))
+            Dense(dense_neurons_on_layer_amounts[i+1],
+                  activation=dense_activation_types[i+1],
+                  input_shape=input_shape_X))
         model.add(Dropout(dropout_values[i]))
 
-    model.add(Dense(1))  # обычный линейный нейрон
-    model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+    # обычный линейный нейрон в конце
+    model.add(Dense(1))
+    model.compile(optimizer='adam',
+                  loss='mse',
+                  metrics=['mae'])
+
     return model
 
 
