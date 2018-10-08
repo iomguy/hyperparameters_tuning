@@ -80,7 +80,8 @@ def train_and_score(network, X, Y):
                                    batch_size=network.get('batch_size', 128))
 
     # тут для кросс-валидации по дефолту используется KFold, но непонятно, делает ли он Shuffle
-    cv_results = cross_validate(wrapped_model, X, Y, cv=5, n_jobs=-1)
+    cv_scoring = network.get('cv_scoring', 'neg_mean_absolute_error')
+    cv_results = cross_validate(wrapped_model, X, Y, cv=5, n_jobs=-1, scoring=cv_scoring)
     result = np.mean(cv_results["test_score"])
 
     # # If no cross-validation, just shuffle

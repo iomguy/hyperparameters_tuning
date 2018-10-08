@@ -54,28 +54,16 @@ if __name__ == '__main__':
 
     # prepare data
     X, Y = PData("AllData.txt")
-    X, Y = unison_shuffled_copies(X, Y)
-
-    TrainSize = np.ceil(len(X) * 0.8).astype(int)
-
-    X = np.array_split(X, [TrainSize], axis=0)
-    Y = np.array_split(Y, [TrainSize], axis=0)
-
-    x_train = X[0]
-    y_train = Y[0]
-    x_test = X[1]
-    y_test = Y[1]
 
     # create model
     # non-zero verbose parameter shows the progress for each net epoch
     model = KerasRegressor(build_fn=create_model, epochs=50, verbose=0)
 
-
     # Задаём варьируемые гиперпараметры системы
 
     # input_shape для полносвязного слоя зависит от формы x_train, поэтмоу он тоже подаётся как вариант
     # параметра системы, просто один вариант
-    input_shape_X_list = (x_train.shape[1],)
+    input_shape_X_list = (X.shape[1],)
     # варианты числа скрытых слоёв
     dense_hidden_layers_amount_list = [3]
     # варианты числа нейронов для любого слоя (первого или скрытого)
@@ -143,9 +131,10 @@ if __name__ == '__main__':
 
             grid = CVProgressBar.RandomizedSearchCVProgressBar(estimator=model,
                                                                param_distributions=param_grid,
-                                                               n_jobs=-1,
+                                                               n_jobs=cv_n_jobs,
                                                                cv=cv,
-                                                               n_iter=250)
+                                                               n_iter=cv_n_rand_iter,
+                                                               scoring=cv_scoring)
 
             # запускаем варьирование параметров для заданного числа слоёв, загоняем результаты в объекте
             grid_result = grid.fit(X, Y)

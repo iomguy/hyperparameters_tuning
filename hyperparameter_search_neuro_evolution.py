@@ -54,23 +54,9 @@ if __name__ == '__main__':
     curr_time = start_time
 
     # prepare data
+    ####БРАТЬ ДАННЫЕ НЕ С PData (там они не переводятся в новую нотацию и не шкалируются), а с 2_prepare_scaler и data_conversion.py
+
     X, Y = PData("AllData.txt")
-    # X, Y = unison_shuffled_copies(X, Y)
-
-    # TrainSize = np.ceil(len(X) * 0.8).astype(int)
-    #
-    # X = np.array_split(X, [TrainSize], axis=0)
-    # Y = np.array_split(Y, [TrainSize], axis=0)
-
-    x_train = X[0]
-    y_train = Y[0]
-    x_test = X[1]
-    y_test = Y[1]
-
-    # create model
-    # non-zero verbose parameter shows the progress for each net epoch
-    #model = KerasRegressor(build_fn=create_model, epochs=50, verbose=0)
-
 
     # Задаём варьируемые гиперпараметры системы
 
@@ -100,7 +86,6 @@ if __name__ == '__main__':
 
     # TODO: переведи результаты в Pandas, сохраняй в .csv
     with open(results_hyperparameters_file_name, "w") as results_file:
-        # тут общее количество слоёв, не скрытых
         params = {
             "epochs": [50],
             "batch_size": batch_size_list,
@@ -112,6 +97,7 @@ if __name__ == '__main__':
             "last_layer_activations": ["sigmoid"],
             "losses": ["mse"],
             "metrics": ["mae"],
+            "cv_scoring": ["neg_mean_absolute_error"],
             "estimator": [create_model]
         }
 

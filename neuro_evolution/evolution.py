@@ -53,7 +53,7 @@ class NeuroEvolution:
         pbar = tqdm(total=len(self._networks))
         pbar.set_description("Generation: {}".format(generation))
         for network in self._networks:
-            network.train(X, Y)
+            network.train(X, Y, generation)
             pbar.update(1)
         pbar.close()
 
