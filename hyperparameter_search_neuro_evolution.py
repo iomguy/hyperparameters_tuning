@@ -90,6 +90,14 @@ if __name__ == '__main__':
     results_hyperparameters_file_name = "results_hyperparameters_neuro_evolution.txt"
     logging.basicConfig(filename="neuro_eval.log", level=logging.INFO)
 
+    # Задаём параметры для NeuroEvolution
+
+    #число поколений
+    ne_generations = 10
+    # число элементов в одном поколении
+    ne_population  = 10
+
+
     # TODO: переведи результаты в Pandas, сохраняй в .csv
     with open(results_hyperparameters_file_name, "w") as results_file:
         # тут общее количество слоёв, не скрытых
@@ -107,7 +115,7 @@ if __name__ == '__main__':
             "estimator": [create_model]
         }
 
-        search = evolution.NeuroEvolution(generations=10, population=10, params=params)
+        search = evolution.NeuroEvolution(generations=ne_generations, population=ne_population, params=params)
         # наилучшая сеть ищется с точки зрения metrics
         search.evolve(X, Y)
 
