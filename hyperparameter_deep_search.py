@@ -1,5 +1,6 @@
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from keras.wrappers.scikit_learn import KerasRegressor
+from sklearn import preprocessing
 from keras.constraints import maxnorm
 
 import numpy as np
@@ -54,11 +55,13 @@ if __name__ == '__main__':
 
     # prepare data
     X, Y = PData("AllData.txt")
+    transformer = preprocessing.MinMaxScaler().fit(X)
+    X_scaled = transformer.transform(X)
+
 
     # create model
     # non-zero verbose parameter shows the progress for each net epoch
     model = KerasRegressor(build_fn=create_model, epochs=50, verbose=0)
-
     # Задаём варьируемые гиперпараметры системы
 
     # input_shape для полносвязного слоя зависит от формы x_train, поэтмоу он тоже подаётся как вариант
@@ -75,6 +78,8 @@ if __name__ == '__main__':
     # варианты значения batch для всей сети
     batch_size_list = [8, 16, 32]
     results_hyperparameters_file_name = "results_hyperparameters.txt"
+    # гиперпараметры перебираются для каждого слоя отдельно или для всех слоёв одинаковые
+    layers_separately = False
 
     # Задаём параметры для GridSearch или RandomizedSearch
 
@@ -90,23 +95,44 @@ if __name__ == '__main__':
     with open(results_hyperparameters_file_name, "w") as results_file:
         # тут вручную параметры перебираются для каждого числа слоёв
         for dense_hidden_layers_amount in dense_hidden_layers_amount_list:
-            # перебираются все возможные сочетания вариантов параметров
-            # по выбранному dense_hidden_layers_amount числу слоёв
-            # TODO: можно сделать списки ниже одним генератором?
-            # число нейронов на слое и функция активации задаются как для скрытых, так и для первого слоя,
-            # поэтому их их число - dense_hidden_layers_amount + 1
-            dense_neurons_on_layer_amount_list_for_curr_layers_amount = \
-                tuple(itertools.combinations_with_replacement
-                      (dense_neurons_on_layer_amount_list, dense_hidden_layers_amount + 1))
-            dense_activation_type_list_for_curr_layers_amount = \
-                tuple(itertools.combinations_with_replacement
-                      (dense_activation_type_list, dense_hidden_layers_amount + 1))
-            # дропауты задаются только после скрытых слоёв, поэтмоу их число - dense_hidden_layers_amount
-            dropout_list_for_curr_layers_amount = \
-                tuple(itertools.combinations_with_replacement
-                      (dropout_list, dense_hidden_layers_amount))
+            if layers_separately == True:
+                # для каждого слоя отдельно
+                # перебираются все возможные сочетания вариантов параметров
+                # по выбранному "dense_hidden_layers_amount" числу слоёв
+                # TODO: добавь флаг - для каждого слоя одни и те же параметры, или для всех отдельно
+                # число нейронов на слое и функция активации задаются как для скрытых, так и для первого слоя,
+                # поэтому их их число - dense_hidden_layers_amount + 1
+                dense_neurons_on_layer_amount_list_for_curr_layers_amount = \
+                    tuple(itertools.combinations_with_replacement
+                          (dense_neurons_on_layer_amount_list, dense_hidden_layers_amount + 1))
+                dense_activation_type_list_for_curr_layers_amount = \
+                    tuple(itertools.combinations_with_replacement
+                          (dense_activation_type_list, dense_hidden_layers_amount + 1))
+                # дропауты задаются только после скрытых слоёв, поэтмоу их число - dense_hidden_layers_amount, без +1
+                dropout_list_for_curr_layers_amount = \
+                    tuple(itertools.combinations_with_replacement
+                          (dropout_list, dense_hidden_layers_amount))
+            else:
+                # одинаковые для всех слоёв
+                # перебираются все сочетания вариантов параметров
+                # по выбранному "dense_hidden_layers_amount" числу слоёв
+                # TODO: можно сделать списки ниже одним генератором?
+                dense_neurons_on_layer_amount_list_for_curr_layers_amount = \
+                    [tuple(itertools.repeat(dense_neurons_on_layer_amount,
+                                            dense_hidden_layers_amount + 1))
+                     for dense_neurons_on_layer_amount in dense_neurons_on_layer_amount_list]
 
-            # задаём параметры сети, которые будем варьировать
+                dense_activation_type_list_for_curr_layers_amount = \
+                    [tuple(itertools.repeat(dense_activation_type,
+                                            dense_hidden_layers_amount + 1))
+                     for dense_activation_type in dense_activation_type_list]
+                # дропауты задаются только после скрытых слоёв, поэтмоу их число - dense_hidden_layers_amount, без +1
+                dropout_list_for_curr_layers_amount = \
+                    [tuple(itertools.repeat(dropout,
+                                            dense_hidden_layers_amount + 1))
+                     for dropout in dropout_list]
+
+                # задаём параметры сети, которые будем варьировать
             param_grid = dict(batch_size=batch_size_list,
                               input_shape_X=[input_shape_X_list],
                               dense_hidden_layers_amount=[dense_hidden_layers_amount],
